@@ -17,44 +17,57 @@ func main() {
 
 	paths := os.Args[1:]
 
-	var successes, failed int
+	var stripped, skipped, failed int
 	for _, path := range paths {
-		if err := processFile(path); err != nil {
-			fmt.Printf("%s: FAILED: %v\n", path, err)
+		didStrip, err := processFile(path)
+		if err != nil {
+			fmt.Printf("%s: FAILURE: %v\n", path, err)
 			failed++
 			continue
 		}
-		successes++
+		if didStrip {
+			stripped++
+		} else {
+			skipped++
+		}
 	}
-	fmt.Printf("FINISHED: %d succeeded, %d failed (of %d total)\n", successes, failed, len(paths))
+
+	fmt.Printf("\nSUCCESS: %d EXIF removed, %d already clean, %d failed (of %d total)\n",
+		stripped, skipped, failed, len(paths))
 }
 
 // processFile reads file from disk, strips the EXIF data using the
 // exifstrip package, then writes the result alongside the original.
-func processFile(path string) error {
+func processFile(path string) (stripped bool, err error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("File could not be read: %w", err)
+		return false, fmt.Errorf("could not read file: %w", err)
 	}
 
 	if err := exifstrip.CheckJPEG(data); err != nil {
-		return fmt.Errorf("Invalid JPEG: %w", err)
+		return false, fmt.Errorf("not a valid JPEG: %w", err)
 	}
 
 	segments, err := exifstrip.FindSegments(data)
 	if err != nil {
-		return fmt.Errorf("Error scanning segments: %w", err)
+		return false, fmt.Errorf("error scanning segments: %w", err)
+	}
+
+	if !exifstrip.HasEXIF(segments) {
+		fmt.Printf("%s: No EXIF data found, nothing to remove.\n", path)
+		return false, nil
 	}
 
 	cleaned := exifstrip.StripEXIF(data, segments)
+
 	outPath := outputPath(path)
 	if err := os.WriteFile(outPath, cleaned, 0644); err != nil {
-		return fmt.Errorf("could not write output file: %w", err)
+		return false, fmt.Errorf("could not write output file: %w", err)
 	}
 
 	fmt.Printf("%s -> %s (%d bytes, removed %d bytes)\n",
 		path, outPath, len(cleaned), len(data)-len(cleaned))
-	return nil
+	return true, nil
 }
 
 // outputPath derives an output filename by appending "_stripped" before

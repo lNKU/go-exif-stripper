@@ -33,7 +33,7 @@ func TestCheckJPEG(t *testing.T) {
 			err := CheckJPEG(tt.data)
 			gotErr := err != nil
 			if gotErr != tt.wantErr {
-				t.Errorf("checkJPEG(%v) error = %v, wantErr %v", tt.data, err, tt.wantErr)
+				t.Errorf("\nCheckJPEG(%v) error = %v, wantErr %v", tt.data, err, tt.wantErr)
 			}
 		})
 	}
@@ -50,7 +50,7 @@ func TestFindSegments(t *testing.T) {
 
 	got, err := FindSegments(data)
 	if err != nil {
-		t.Fatalf("FindSegments returned unexpected error: %v", err)
+		t.Fatalf("\nFindSegments returned unexpected error: %v", err)
 	}
 
 	want := []Segment{
@@ -60,12 +60,12 @@ func TestFindSegments(t *testing.T) {
 	}
 
 	if len(got) != len(want) {
-		t.Fatalf("got %d segments, want %d\ngot:  %+v\nwant: %+v", len(got), len(want), got, want)
+		t.Fatalf("\nGot %d segments, want %d\ngot:  %+v\nwant: %+v", len(got), len(want), got, want)
 	}
 
 	for i := range want {
 		if got[i] != want[i] {
-			t.Errorf("segment %d: got %+v, want %+v", i, got[i], want[i])
+			t.Errorf("\nSegment %d: got %+v, want %+v", i, got[i], want[i])
 		}
 	}
 }
@@ -81,7 +81,7 @@ func TestStripEXIF(t *testing.T) {
 
 	segments, err := FindSegments(data)
 	if err != nil {
-		t.Fatalf("findSegments returned unexpected error: %v", err)
+		t.Fatalf("\nFindSegments returned unexpected error: %v", err)
 	}
 
 	got := StripEXIF(data, segments)
@@ -94,6 +94,6 @@ func TestStripEXIF(t *testing.T) {
 	}
 
 	if !bytes.Equal(got, want) {
-		t.Errorf("stripEXIF result mismatch\ngot:  %#x\nwant: %#x", got, want)
+		t.Errorf("\nStripEXIF result mismatch\ngot:  %#x\nwant: %#x", got, want)
 	}
 }

@@ -8,10 +8,10 @@ import (
 // verifies that data begins with valid "Start of Image" bytes
 func CheckJPEG(data []byte) error {
 	if len(data) < 2 {
-		return fmt.Errorf("File is too small to be a JPEG.")
+		return fmt.Errorf("file is too small to be a JPEG.")
 	}
 	if data[0] != 0xFF || data[1] != 0xD8 {
-		return fmt.Errorf("Missing JPEG Start of Image marker (got %#x %#x).", data[0], data[1])
+		return fmt.Errorf("missing JPEG Start of Image marker (got %#x %#x).", data[0], data[1])
 	}
 	return nil
 }
@@ -31,7 +31,7 @@ func FindSegments(data []byte) ([]Segment, error) {
 	i := 2
 	for i < len(data)-1 {
 		if data[i] != 0xFF {
-			return nil, fmt.Errorf("Expected marker byte 0xFF at offset %d, got %#x.", i, data[i])
+			return nil, fmt.Errorf("expected marker byte 0xFF at offset %d, got %#x.", i, data[i])
 		}
 		marker := data[i+1]
 
@@ -41,7 +41,7 @@ func FindSegments(data []byte) ([]Segment, error) {
 		}
 
 		if i+4 > len(data) {
-			return nil, fmt.Errorf("Truncated segment at offset %d.", i)
+			return nil, fmt.Errorf("truncated segment at offset %d.", i)
 		}
 
 		length := int(binary.BigEndian.Uint16(data[i+2 : i+4]))
@@ -50,6 +50,17 @@ func FindSegments(data []byte) ([]Segment, error) {
 	}
 
 	return segments, nil
+}
+
+// reports whether segments contains an APP1 segment and skips writing a file
+// in the event the APP1 segment does not exist or appear
+func HasEXIF(segments []Segment) bool {
+	for _, seg := range segments {
+		if seg.Marker == 0xE1 {
+			return true
+		}
+	}
+	return false
 }
 
 // rebuilds a file's bytes with every APP1 marker segment removed.
