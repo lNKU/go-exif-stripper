@@ -70,6 +70,26 @@ func TestFindSegments(t *testing.T) {
 	}
 }
 
+func TestStrippedName(t *testing.T) {
+	got := StrippedName("IMG_5836.JPG")
+	want := "IMG_5836_stripped.JPG"
+	if got != want {
+		t.Errorf("StrippedName(%q) = %q, want %q", "IMG_5836.JPG", got, want)
+	}
+}
+
+func TestHasEXIF(t *testing.T) {
+	withEXIF := []Segment{{Marker: 0xE0}, {Marker: 0xE1}, {Marker: 0xDA}}
+	withoutEXIF := []Segment{{Marker: 0xE0}, {Marker: 0xDA}}
+
+	if !HasEXIF(withEXIF) {
+		t.Errorf("HasEXIF(%+v) = false, want true", withEXIF)
+	}
+	if HasEXIF(withoutEXIF) {
+		t.Errorf("HasEXIF(%+v) = true, want false", withoutEXIF)
+	}
+}
+
 func TestStripEXIF(t *testing.T) {
 	data := []byte{
 		0xFF, 0xD8,

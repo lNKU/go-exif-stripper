@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"go-exif-stripper/internal/exifstrip"
 )
@@ -37,7 +36,7 @@ func main() {
 }
 
 // processFile reads file from disk, strips the EXIF data using the
-// exifstrip package, then writes the result alongside the original.
+// exifstrip, then writes the result beside the original.
 func processFile(path string) (stripped bool, err error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -70,12 +69,10 @@ func processFile(path string) (stripped bool, err error) {
 	return true, nil
 }
 
-// outputPath derives an output filename by appending "_stripped" before
-// the file extension, in the same directory as the original file.
+// outputPath derives an output filename by utilizing StrippedName's ExifStrip func
+// to apply naming nomenclature to file(s) within archive
 func outputPath(inputPath string) string {
-	dir := filepath.Dir(inputPath)   // e.g. "/home/user/Downloads"
-	ext := filepath.Ext(inputPath)   // e.g. ".jpg", ".png", etc
-	base := filepath.Base(inputPath) // e.g. "IMG_5836.JPG"
-	nameOnly := strings.TrimSuffix(base, ext)
-	return filepath.Join(dir, nameOnly+"_stripped"+ext)
+	dir := filepath.Dir(inputPath)
+	name := exifstrip.StrippedName(filepath.Base(inputPath))
+	return filepath.Join(dir, name)
 }

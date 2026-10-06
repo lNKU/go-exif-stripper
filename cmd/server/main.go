@@ -81,7 +81,7 @@ func addStrippedFile(zw *zip.Writer, fh *multipart.FileHeader) error {
 		cleaned = exifstrip.StripEXIF(data, segments)
 	}
 
-	entry, err := zw.Create(fh.Filename)
+	entry, err := zw.Create(exifstrip.StrippedName(fh.Filename))
 	if err != nil {
 		return fmt.Errorf("could not add to zip - %w", err)
 	}

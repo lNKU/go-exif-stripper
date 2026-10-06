@@ -3,7 +3,16 @@ package exifstrip
 import (
 	"encoding/binary"
 	"fmt"
+	"path/filepath"
+	"strings"
 )
+
+// appends "_stripped" before a file's extension
+func StrippedName(filename string) string {
+	ext := filepath.Ext(filename)
+	base := strings.TrimSuffix(filename, ext)
+	return base + "_stripped" + ext
+}
 
 // verifies that data begins with valid "Start of Image" bytes
 func CheckJPEG(data []byte) error {
@@ -16,7 +25,7 @@ func CheckJPEG(data []byte) error {
 	return nil
 }
 
-// segment describes one marker segment found in a JPEG file
+// segment describes a marker segment found within a valid JPEG file
 type Segment struct {
 	Marker byte
 	Offset int
